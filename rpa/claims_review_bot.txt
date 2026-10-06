@@ -1,0 +1,22 @@
+@@CustomName: 'StartTime'
+DateTime.GetCurrentDateTime.Local DateTimeFormat: DateTime.DateTimeFormat.DateAndTime CurrentDateTime=> StartTime
+File.ReadFromCSVFile.ReadCSV CSVFile: $'''C:\\Users\\User\\claims-ai-automation\\output\\claims_quality_report.csv''' Encoding: File.CSVEncoding.UTF8 TrimFields: True FirstLineContainsColumnNames: True ColumnsSeparator: File.CSVColumnsSeparator.SystemDefault CSVTable=> CSVTable
+Folder.Create FolderPath: $'''C:\\Users\\User\\claims-ai-automation''' FolderName: $'''review_cases''' Folder=> NewFolder
+@@CustomName: 'CasesCreated'
+SET CasesCreated TO 0
+LOOP FOREACH CurrentItem IN CSVTable
+    IF CurrentItem['quality_status'] = $'''NEEDS_FIX''' THEN
+        File.WriteText File: $'''C:\\Users\\User\\claims-ai-automation\\review_cases\\review_%CurrentItem['source_file']%''' TextToWrite: $'''CLAIM REVIEW CASE
+File: %CurrentItem['source_file']%
+Customer: %CurrentItem['customer_name']%
+Claim type: %CurrentItem['claim_type']%
+Amount (EUR): %CurrentItem['estimated_amount_eur']%
+Issues: %CurrentItem['issues']%
+Created by bot: %StartTime%''' AppendNewLine: True IfFileExists: File.IfFileExists.Overwrite Encoding: File.FileEncoding.UTF8
+        Variables.IncreaseVariable Value: CasesCreated IncrementValue: 1
+        File.WriteText File: $'''C:\\Users\\User\\claims-ai-automation\\review_cases\\bot_log.txt''' TextToWrite: $'''%StartTime% | %CurrentItem['source_file']% | review case created''' AppendNewLine: True IfFileExists: File.IfFileExists.Append Encoding: File.FileEncoding.Unicode
+    END
+END
+DateTime.GetCurrentDateTime.Local DateTimeFormat: DateTime.DateTimeFormat.DateAndTime CurrentDateTime=> EndTime
+DateTime.Subtract FromDate: EndTime SubstractDate: StartTime TimeUnit: DateTime.DifferenceTimeUnit.Seconds TimeDifference=> TimeDifference
+Display.ShowMessageDialog.ShowMessage Title: $'''Claims Review Bot''' Message: $'''Done! %CasesCreated% review cases created in %TimeDifference% seconds.''' Icon: Display.Icon.None Buttons: Display.Buttons.OK DefaultButton: Display.DefaultButton.Button1 IsTopMost: False ButtonPressed=> ButtonPressed
