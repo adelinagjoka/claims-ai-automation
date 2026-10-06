@@ -1,0 +1,7 @@
+﻿policy_number,customer_name,incident_date,claim_type,description_summary,estimated_amount_eur,contact_email,extraction_status,attempts,source_file
+AUT-2026-104857,Laura Martínez Soler,2026-09-14,auto,"Another vehicle rear-ended the customer's car at a traffic light, causing damage to the bumper and tailgate.",1850.0,laura.martinez@example.com,ok,1,claim_01.txt
+HOG-2026-558203,Jordi Puig Ferrer,2026-09-02,home,"A broken pipe in the kitchen caused water damage to the parquet floor, furniture, and the downstairs neighbor's ceiling.",3200.0,jordi.puig@example.com,ok,3,claim_02.txt
+VIA-2026-330915,Marta Gómez Ruiz,2026-08-21,travel,"Luggage containing clothes, a laptop, and documents was stolen at a train station in Rome.",1420.0,marta.gomez@example.com,ok,2,claim_03.txt
+,Andrés Navarro Vidal,2026-09-26,health,"The customer had a fall at home, broke their wrist, and visited the emergency room.",,andres.navarro@example.com,ok,2,claim_04.txt
+HOG-2026-771046,Carlos Ortega Lima,2026-11-15,home,"The customer's home was burglarized while on vacation, with stolen items including jewelry, two computers, a television, and a collector's watch.",48500.0,carlos.ortega@example,ok,2,claim_05.txt
+AUT-2026-209384,Emma Clarke,2026-09-30,auto,A stone hit and cracked the car windscreen on the motorway near Girona.,620.0,emma.clarke@example.com,ok,3,claim_06.txt
