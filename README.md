@@ -1,6 +1,6 @@
 # Claims Intake Monitor: AI Extraction & Data Quality Control
 
-An end-to-end automation pipeline that reads unstructured insurance claim emails, extracts structured data with a Large Language Model (LLM), validates it with business rules, and presents the results in a Power BI dashboard.
+An end-to-end automation pipeline that reads unstructured insurance claim emails, extracts structured data with a Large Language Model (LLM), validates it with business rules, opens review cases with an RPA bot, and presents the results in a Power BI dashboard.
 
 ![Dashboard](images/dashboard.png)
 
@@ -18,7 +18,8 @@ This pipeline automates the intake process:
 
 1. **An LLM reads each email** and extracts the key fields into a structured format.
 2. **Business rules validate the result**, flagging missing data, invalid values and suspicious claims.
-3. **A Power BI dashboard** shows the overall quality and highlights which claims need human review.
+3. **An RPA bot (Power Automate Desktop)** opens a review case for every claim that needs human attention.
+4. **A Power BI dashboard** shows the overall quality and highlights which claims need human review.
 
 The key design principle: **the AI is used only for what it does best (understanding language), while everything that must be auditable is handled by deterministic rules.**
 
@@ -34,6 +35,8 @@ flowchart TD
     D --> E[check_quality.py<br/>business rules]
     E --> F[claims_quality_report.csv<br/>status + issues]
     F --> G[Power BI dashboard]
+    F --> H[RPA bot<br/>Power Automate Desktop]
+    H --> I[Review cases + audit log]
 ```
 
 | Component | Purpose |
@@ -42,10 +45,11 @@ flowchart TD
 | `extract_claims.py` | Sends each email to the LLM and saves the extracted fields to a CSV |
 | `check_quality.py` | Applies validation rules and assigns a quality status to every claim |
 | `claims_dashboard.pbix` | Power BI dashboard built on the quality report |
+| `rpa/` | Power Automate Desktop bot that opens review cases for flagged claims |
 
 ## Tech stack
 
-**Python** · **Google Gemini API (LLM)** · **pandas** · **Power BI** (Power Query, DAX) · **Git**
+**Python** · **Google Gemini API (LLM)** · **pandas** · **Power Automate Desktop (RPA)** · **Power BI** (Power Query, DAX) · **Git**
 
 ---
 
@@ -80,7 +84,11 @@ Production-style reliability:
 
 Each claim receives a status: **OK**, **REVIEW** (warnings only), **NEEDS_FIX** (real problems) or **NOT_EXTRACTED**.
 
-### 3. Dashboard (Power BI)
+### 3. RPA review bot (Power Automate Desktop)
+
+A desktop flow reads the quality report and, for every claim marked NEEDS_FIX, creates a review case file, writes an audit log entry, and counts the cases. It measures its own run time: **2 review cases created in ~2 seconds**. Details in [`rpa/`](rpa/).
+
+### 4. Dashboard (Power BI)
 
 KPIs, claims by quality status, issues by category, and a detail table with conditional formatting. Issues are split into categories in Power Query, and the dashboard refreshes directly from the pipeline output.
 
@@ -93,6 +101,7 @@ KPIs, claims by quality status, issues by category, and a detail table with cond
 | Claims processed | 6 / 6 |
 | Clean claims | 4 (66.7%) |
 | Claims sent to review | 2 |
+| Review cases opened by the RPA bot | 2, in ~2 seconds |
 
 What the pipeline handled correctly:
 - Emails in **Spanish and English**, from formal letters to informal messages.
@@ -112,6 +121,9 @@ claims-ai-automation/
 │   └── claims_quality_report.csv
 ├── images/
 │   └── dashboard.png
+├── rpa/
+│   ├── claims_review_bot.txt   # Power Automate Desktop flow
+│   └── README.md
 ├── extract_claims.py           # step 1: AI extraction
 ├── check_quality.py            # step 2: quality rules
 ├── test_api.py                 # connection test
@@ -140,6 +152,8 @@ pip install -r requirements.txt
 python extract_claims.py
 python check_quality.py
 ```
+
+Then run the RPA bot in Power Automate Desktop (see [`rpa/README.md`](rpa/README.md)) to open the review cases.
 
 Then open `claims_dashboard.pbix` in Power BI Desktop and click **Refresh**.
 
